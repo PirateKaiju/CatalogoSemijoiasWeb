@@ -20,9 +20,10 @@
         }
 
         /**
-         * @Route("/products/")
+             * @Route("/products/{id}"), requeriments={"id" = "\d+"}
+             * @Method({"GET"})
          */
-        public function show(){
+        public function show($id){
 
 
 
