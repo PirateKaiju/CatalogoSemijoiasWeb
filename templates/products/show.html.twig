@@ -1,2 +1,6 @@
-{{ product.name }}
-{{ product.description }}
+{% extends "main.html.twig" %}
+
+{% block content %}
+    {{ product.name }}
+    {{ product.description }}
+{% endblock %}
