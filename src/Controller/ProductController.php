@@ -3,7 +3,8 @@
     namespace App\Controller;
 
     use App\Entity\Product;
-    use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Annotation\Route;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,16 +23,46 @@ class ProductController extends AbstractController{
          * @Route("/products", name="product_index")
          * @Method({"GET"})
          */
-        public function index(){
+        public function index(Request $request, $page = 1, $limit = 3){
 
             //TODO: PAGINATION
+            $curPage = $request->get("page");
+            //var_dump($curPage);
 
-            return $this->render("products/index.html.twig", []);
+            if(isset($curPage)){
+                $page = $curPage;
+            }
+
+            
+            $products = $this->getDoctrine()
+                ->getManager()
+                ->getRepository(Product::class)
+                ->createQueryBuilder('p')//@php-ignore                
+                ->getQuery();
+                /*->getRepository(Product::class)
+                ->
+
+                var_dump($products);*/
+            //var_dump($products);
+
+            //$query = $this->createQueryBuilder()
+                
+
+            $paginator = new Paginator($products);
+
+            $paginator->getQuery()
+                ->setFirstResult($limit * ($page - 1))
+                ->setMaxResults($limit);
+
+            //var_dump($paginator);
+
+
+            return $this->render("products/index.html.twig", ["paginator" => $paginator]);
         }
 
         /**
-             * @Route("/products/{id}", requirements={"id" = "\d+"})
-             * @Method({"GET"})
+         * @Route("/products/{id}", methods = {"GET"}, requirements={"id" = "\d+"}, name="show_product")
+         * 
          */
         public function show($id){
 
@@ -104,16 +135,93 @@ class ProductController extends AbstractController{
             return $this->redirectToRoute('product_index');
 
         }
+        /**
+         * @Route("/products/{id}/edit", methods={"GET"})
+         * @IsGranted("ROLE_USER")
+         */
 
-        public function update(){
-            
+        public function edit($id){
 
+            $entityManager = $this->getDoctrine()->getManager();
+
+            $product = $entityManager
+                ->getRepository(Product::class)
+                ->find($id);
+
+            if(!$product){
+                //TODO: HANDLE PRODUCT NOT BEING FOUND
+            }
+
+            $form = $this->createFormBuilder($product)
+                ->setAction($this->generateUrl('update_product', ['id' => $id]))
+                ->setMethod('PUT')
+                ->add('name', TextType::class)
+                ->add('price', MoneyType::class)
+                ->add('description', TextType::class)
+                ->add('quantity', IntegerType::class)
+                ->add('submit', SubmitType::class)
+                ->getForm();
+
+            return $this->render("products/edit.html.twig" , [ "form" => $form->createView(), ]);
 
         }
 
-        public function delete(){
+        /**
+         * @Route("/products/{id}", methods={"PUT"}, requirements={"id" = "\d+"}, name="update_product")
+         * 
+         * @IsGranted("ROLE_USER")
+         */
 
+        public function update(Request $request, $id = null){
 
+            //return new Response("Reached!");
+            $entityManager = $this->getDoctrine()->getManager();
+
+            $product = $entityManager
+                ->getRepository(Product::class)
+                ->find($id);
+
+            if(!$product){
+                //TODO: HANDLE PRODUCT NOT BEING FOUND
+            }
+
+            $data = $request->get('form');
+
+            //die(var_dump($product));
+
+            $product->setName($data["name"]);
+            $product->setPrice($data["price"]);
+            $product->setQuantity($data['quantity']);
+            $product->setDescription($data['description']);
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('product_index');
+        }
+
+        /**
+         * @Route("/product/{id}/delete", methods={"DELETE"}, requirements={"id" = "\d+"})
+         * @IsGranted("ROLE_USER")
+         */
+
+        public function delete($id = null){
+
+            $product = $this->getDoctrine()
+                ->getManager()
+                ->getRepository(Product::class)
+                ->find($id);
+
+            if(!$product){
+                //TODO: HANDLE PRODUCT NOT BEING FOUND
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+
+            $entityManager->remove($product);
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('product_index');
 
         }
 

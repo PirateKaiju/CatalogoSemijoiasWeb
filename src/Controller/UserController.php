@@ -20,7 +20,7 @@
     use Symfony\Component\HttpFoundation\Request;
 
 
-class UserController extends AbstractController{
+    class UserController extends AbstractController{
 
         private $passwordEncoder;
 

@@ -4,4 +4,8 @@
 
     Hello World!
 
+    {% for pageitem in paginator %}
+        {{pageitem.name}}
+    {% endfor %}
+
 {% endblock %}
