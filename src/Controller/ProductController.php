@@ -3,6 +3,7 @@
     namespace App\Controller;
 
     use App\Entity\Product;
+use App\Service\FileUploader;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\Validator\Validator\ValidatorInterface;
     use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class ProductController extends AbstractController{
 
@@ -96,6 +98,14 @@ class ProductController extends AbstractController{
                 ->add('price', MoneyType::class)
                 ->add('description', TextType::class)
                 ->add('quantity', IntegerType::class)
+                
+                ->add('image', FileType::class, [
+                    'label' => "Image for the product",
+                    'mapped' => false,
+                    'required' => false,
+
+                ])
+                
                 ->add('submit', SubmitType::class)
                 ->getForm();
 
@@ -110,7 +120,7 @@ class ProductController extends AbstractController{
          * @IsGranted("ROLE_USER")
          */
 
-        public function store(Request $request, ValidatorInterface $validator){
+        public function store(Request $request, ValidatorInterface $validator, FileUploader $fileUploader){
 
             $entityManager = $this->getDoctrine()->getManager();
 
@@ -122,6 +132,32 @@ class ProductController extends AbstractController{
             $product->setPrice($data['price']);
             $product->setQuantity($data['quantity']);
             $product->setDescription($data['description']);
+
+            //Receiving image from the form this
+            //TODO: Change this to a more formal approach
+            //Maybe use a Form Type?
+            $form = $this->createFormBuilder($product)
+                ->add('image', FileType::class, [
+                    'label' => "Image for the product",
+                    'mapped' => false,
+                    'required' => false,
+                ])
+                ->getForm();
+
+            $form->handleRequest($request);
+            /*$uploadedFile = $form['image']->getData();
+
+            var_dump($uploadedFile);
+            die();*/
+
+
+            $imageFile = $form['image']->getData();
+
+            if($imageFile){
+                $imageFilename = $fileUploader->upload($imageFile);
+                $product->setImageFilename($imageFilename);
+            }
+
 
             $errors = $validator->validate($product);
 
