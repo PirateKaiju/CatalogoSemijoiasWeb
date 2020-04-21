@@ -57,6 +57,9 @@ class ProductController extends AbstractController{
 
             //var_dump(count($paginator));
 
+            $totalItens = count($paginator);
+            $totalPages = ceil($totalItens / $limit);
+
             $paginator->getQuery()
                 ->setFirstResult($limit * ($page - 1))
                 ->setMaxResults($limit);
@@ -71,7 +74,7 @@ class ProductController extends AbstractController{
 
             }*/
 
-            return $this->render("products/index.html.twig", ["paginator" => $paginator]);
+            return $this->render("products/index.html.twig", ["paginator" => $paginator, "total_pages" => $totalPages]);
         }
 
         /**
