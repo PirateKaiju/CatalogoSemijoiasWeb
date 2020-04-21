@@ -41,6 +41,8 @@ class ProductController extends AbstractController{
                 ->getRepository(Product::class)
                 ->createQueryBuilder('p')//@php-ignore                
                 ->getQuery();
+                //->setFirstResult($limit * ($page - 1))
+                //->setMaxResults($limit);
                 /*->getRepository(Product::class)
                 ->
 
@@ -48,16 +50,26 @@ class ProductController extends AbstractController{
             //var_dump($products);
 
             //$query = $this->createQueryBuilder()
-                
+            
+            //var_dump(get_class($products));
 
             $paginator = new Paginator($products);
+
+            //var_dump(count($paginator));
 
             $paginator->getQuery()
                 ->setFirstResult($limit * ($page - 1))
                 ->setMaxResults($limit);
 
-            //var_dump($paginator);
+            /*var_dump($paginator);
+            
+            die();*/
 
+            /*foreach($paginator as $item){
+
+                echo(serialize($item)); //FOR CHECKING PURPOSES ONLY
+
+            }*/
 
             return $this->render("products/index.html.twig", ["paginator" => $paginator]);
         }
