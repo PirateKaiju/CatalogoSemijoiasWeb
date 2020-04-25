@@ -6,7 +6,12 @@
 
         <div class="container">
             
-            {{ form(form) }}
+            {{ form_start(form) }}
+                {{ form_errors(form) }}
+                {{ form_row(form.email, {'attr':{'class':'text-warning'}}) }}
+                {{ form_row(form.password) }}
+                {{ form_row(form.submit) }}
+            {{ form_end(form) }}
 
         </div>
 

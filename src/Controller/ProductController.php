@@ -210,7 +210,17 @@ class ProductController extends AbstractController{
                 ->add('price', MoneyType::class)
                 ->add('description', TextType::class)
                 ->add('quantity', IntegerType::class)
+                
+                
+                ->add('image', FileType::class, [
+                    'label' => "Image for the product",
+                    'mapped' => false,
+                    'required' => false,
+
+                ])
+
                 ->add('submit', SubmitType::class)
+
                 ->getForm();
 
             return $this->render("products/edit.html.twig" , [ "form" => $form->createView(), ]);
@@ -223,7 +233,7 @@ class ProductController extends AbstractController{
          * @IsGranted("ROLE_USER")
          */
 
-        public function update(Request $request, $id = null){
+        public function update(Request $request, $id = null, FileUploader $fileUploader){
 
             //return new Response("Reached!");
             $entityManager = $this->getDoctrine()->getManager();
@@ -244,6 +254,37 @@ class ProductController extends AbstractController{
             $product->setPrice($data["price"]);
             $product->setQuantity($data['quantity']);
             $product->setDescription($data['description']);
+
+            //IMAGE HANDLING
+
+            //Receiving image from the form this
+            //TODO: Change this to a more formal approach
+            //Maybe use a Form Type?
+            $form = $this->createFormBuilder($product)
+                ->add('image', FileType::class, [
+                    'label' => "Image for the product",
+                    'mapped' => false,
+                    'required' => false,
+                ])
+                ->getForm();
+
+            $form->handleRequest($request);
+            
+            $imageFile = $request->files->get('form')['image'];
+
+            if($imageFile){
+                $imageFilename = $fileUploader->upload($imageFile);
+                $product->setImageFilename($imageFilename);
+            }else{
+
+                //TODO: FIX THIS
+                var_dump($request->files->get('form')['image']);
+                die();
+
+            }
+
+            //IMAGE HANDLING
+
 
             $entityManager->flush();
 

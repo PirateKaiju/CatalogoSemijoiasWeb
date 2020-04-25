@@ -1,6 +1,29 @@
 {% extends "main.html.twig" %}
 
 {% block content %}
-    {{form(form)}}
+
+<div class="content">
+
+    <div class="container">
+        {{form_start(form)}}
+
+            {{form_errors(form)}}
+
+            {{ form_label(form.name, null, {
+                'label_attr':{'class':'text-warning'}
+            }) }}
+            {{ form_widget(form.name) }}
+
+            {{ form_row(form.price, {'attr':{'class':'text-warning'}}) }}
+            {{ form_row(form.description) }}
+            {{ form_row(form.quantity) }}
+            {{ form_row(form.image) }}
+            {{ form_row(form.submit) }}
+
+            {{form_rest(form)}}
+        {{ form_end(form) }}
+    </div>
+</div>
+
 {% endblock %}
 
